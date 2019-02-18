@@ -43,13 +43,13 @@ public class ToolingAPIService {
     }
     public HttpResponse updateAuraDefinition(String body,string id){
         HttpRequest request=createHttpRequest('POST');
-        request.setBody(body);
+        request.setBody('{"source":'+body+'}');
         request.setEndpoint(BASE_URL+TOOLING_API_URI+'/sobjects/AuraDefinition/'+id+'?_HttpMethod=PATCH');
         return sendRequest(request);
     }
     public HttpResponse updateWebDefinition(String body,string id){
         HttpRequest request=createHttpRequest('POST');
-        request.setBody(body);
+        request.setBody('{"source":'+body+'}');
         request.setEndpoint(BASE_URL+TOOLING_API_URI+'/sobjects/LightningComponentResource/'+id+'?_HttpMethod=PATCH');
         return sendRequest(request);
     }
