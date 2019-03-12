@@ -29,12 +29,7 @@ Tooling Api End Points
  3.1 Inserting lighitng component Bundle =  /services/data/v45.0/sobjects/AuraDefinitionBundle 
      a.Post Method
      b.JSON Request Body
-        {
-        "AuraDefinitionBundleId":"0Ab6F000000XXXXXX",
-        "DefType":"COMPONENT",
-        "Format":"XML",
-        "Source":"<aura:component></aura:component>"
-      }
+         { "DeveloperName":"my_cmp", "MasterLabel":"my_cmp", "Description":"cmp","ApiVersion":"45" }
      c.response is auradefenationbundel id used in creating aura bundle
 
 3.2 Inserting lighitng component  Resourse  =  /services/data/v45.0/sobjects/AuraDefinition
