@@ -1,4 +1,5 @@
 public class ToolingAPIService {
+    private final String APIVERSION = '45';
     private final String BASE_URL = URL.getSalesforceBaseUrl().toExternalForm();
     private final String TOOLING_API_URI = '/services/data/v45.0/tooling' ;
     private final String SESSION_ID{
@@ -14,73 +15,114 @@ public class ToolingAPIService {
     public ToolingAPIService(){
         http=new Http();
     }
-    public enum SObjectType { ApexClass,ApexPage,AuraDefinitionBundle,AuraDefinition,LightningComponentBundle,LightningComponentResource}
-    public HttpResponse queryAuraBundle(String bundleId){
-        bundleId=String.escapeSingleQuotes(bundleId);
+
+    public HttpResponse query(String q){
         HttpRequest request=createHttpRequest('GET');
-        String queryFields=genrateSearchQuery(SObjectType.AuraDefinition);
-        queryFields+=' WHERE AuraDefinitionBundleId=\''+bundleId+'\'';
-        String query='/query/?q=' + EncodingUtil.urlEncode(queryFields, 'UTF-8');
-        request.setEndpoint(BASE_URL+TOOLING_API_URI+query);
+        q=q.replace(' ','+');
+        request.setEndpoint(request.getEndpoint()+'/query?q='+q);
         return sendRequest(request);
     }
-    public HttpResponse queryWebBundle(String bundleId){
-        bundleId=String.escapeSingleQuotes(bundleId);
-        HttpRequest request=createHttpRequest('GET');
-        String queryFields=genrateSearchQuery(SObjectType.LightningComponentResource);
-        queryFields+=' WHERE LightningComponentBundleId=\''+bundleId+'\'';
-        String query='/query/?q=' + EncodingUtil.urlEncode(queryFields, 'UTF-8');
-        request.setEndpoint(BASE_URL+TOOLING_API_URI+query);
-        return sendRequest(request);
-    }
-    public HttpResponse queryMetadata(SObjectType metaType){
-        HttpRequest request=createHttpRequest('GET');
-        String queryFields=genrateSearchQuery(metaType);
-        String query='/query/?q=' + EncodingUtil.urlEncode(queryFields, 'UTF-8');
-        request.setEndpoint(BASE_URL+TOOLING_API_URI+query);
-        return sendRequest(request);
-        
-    }
-    public HttpResponse updateAuraDefinition(String body,string id){
+
+    public HttpResponse createApexClass(String className,String classBody){
         HttpRequest request=createHttpRequest('POST');
-        request.setBody('{"source":'+body+'}');
-        request.setEndpoint(BASE_URL+TOOLING_API_URI+'/sobjects/AuraDefinition/'+id+'?_HttpMethod=PATCH');
+        request.setEndpoint(request.getEndpoint()+'/sobjects/ApexClass');
+        JSONGenerator gen = JSON.createGenerator(true);
+        gen.writeStartObject();     
+        gen.writeStringField('Name',className);
+        gen.writeStringField('Body',classBody);
+        gen.writeEndObject();
+        request.setBody(gen.getAsString());
         return sendRequest(request);
     }
-    public HttpResponse updateWebDefinition(String body,string id){
+    public HttpResponse createApexPage(String pageName,String pageBody){
         HttpRequest request=createHttpRequest('POST');
-        request.setBody('{"source":'+body+'}');
-        request.setEndpoint(BASE_URL+TOOLING_API_URI+'/sobjects/LightningComponentResource/'+id+'?_HttpMethod=PATCH');
+        request.setEndpoint(request.getEndpoint()+'/sobjects/ApexClass');
+        JSONGenerator gen = JSON.createGenerator(true);
+        gen.writeStartObject();     
+        gen.writeStringField('Name',pageName);
+        gen.writeStringField('Markup',pageBody);
+        gen.writeStringField('MasterLabel',pageName);
+        gen.writeEndObject();
+        request.setBody(gen.getAsString());
         return sendRequest(request);
     }
-    private String genrateSearchQuery(SObjectType metaType){
-        String queryFields=queryfieldsList.get(metaType);
-        return 'SELECT '+queryFields+' FROM '+metaType;
+
+    public HttpResponse createLightingComponent(String componentName){
+        HttpRequest request=createHttpRequest('POST');
+        request.setEndpoint(request.getEndpoint()+'/sobjects/AuraDefinitionBundle ');
+        JSONGenerator gen = JSON.createGenerator(true);
+        gen.writeStartObject();     
+        gen.writeStringField('DeveloperName',componentName);
+        gen.writeStringField('MasterLabel',componentName);
+        gen.writeStringField('Description',componentName);
+        gen.writeStringField('ApiVersion',APIVERSION);
+        gen.writeEndObject();
+        request.setBody(gen.getAsString());
+        return sendRequest(request);
     }
-    private HttpResponse sendRequest(HttpRequest request){
-        return http.send(request);
+     public HttpResponse createLightingComponentFile(String componentId,String type,String body){
+         //List<String> supportedTypes=new List<String>{'CONTROLLER','COMPONENT','HELPER','RENDERER','STYLE','DESIGN'};
+        HttpRequest request=createHttpRequest('POST');
+        request.setEndpoint(request.getEndpoint()+'/sobjects/AuraDefinition ');
+        JSONGenerator gen = JSON.createGenerator(true);
+        gen.writeStartObject();     
+        gen.writeStringField('AuraDefinitionBundleId',componentId);
+        gen.writeStringField('DefType',type);
+        if(type='CONTROLLER' ||type='HELPER' ||type='RENDERER'){
+            gen.writeStringField('Format','JS');
+        }
+        if(type='STYLE'){
+            gen.writeStringField('Format','CSS');
+        }
+        if(type='COMPONENT'  || type='DESIGN'){
+        gen.writeStringField('Format','XML ');
+        }
+        gen.writeStringField('Source',body);
+        gen.writeEndObject();
+        request.setBody(gen.getAsString());
+        return sendRequest(request);
     }
+
+    public HttpResponse createLightingWEBComponent(String cmponentName){
+        HttpRequest request=createHttpRequest('POST');
+        request.setEndpoint(request.getEndpoint()+'/sobjects/LightningComponentBundle ');
+        JSONGenerator gen = JSON.createGenerator(true);
+        gen.writeStartObject();     
+        gen.writeStringField('FullName',cmponentName);
+        gen.writeFieldName('Metadata');
+        gen.writeStartObject();
+        gen.writeStringField('masterLabel',cmponentName);
+        gen.writeEndObject();
+        gen.writeEndObject();
+        request.setBody(gen.getAsString());
+        return sendRequest(request);
+    }
+
+public HttpResponse createLightingWEBComponentFile(String componentId,String componentName,
+                                                    String filename,String format,String body){
+        //List<String> supportedFormats=new List<String>{'css','html','js','xml'};
+        HttpRequest request=createHttpRequest('POST');
+        request.setEndpoint(request.getEndpoint()+'/sobjects/LightningComponentResource ');
+        JSONGenerator gen = JSON.createGenerator(true);
+        gen.writeStartObject();     
+        gen.writeStringField('LightningComponentBundleId',componentId);
+        gen.writeStringField('FilePath','lwc/'+componentName+'/'+filename);
+        gen.writeStringField('Format',format);
+        gen.writeStringField('Source',body);
+        gen.writeEndObject();
+        request.setBody(gen.getAsString());
+        return sendRequest(request);
+    }
+    
+
+
     private HttpRequest createHttpRequest(String requestType){
         HttpRequest request = new HttpRequest();
+        request.setEndpoint(BASE_URL+TOOLING_API_URI);
         request.setHeader('Authorization', 'OAuth ' + SESSION_ID);
         request.setHeader('Content-Type', 'application/json');
         request.setMethod(requestType);
         return request;
     }
-    public static Map<String,SObjectType> getENUMforString=new  Map<String,SObjectType>{
-        'ApexClass'=>SObjectType.ApexClass,
-            'ApexPage'=>SObjectType.ApexPage,
-            'AuraDefinition'=>SObjectType.AuraDefinition,
-            'AuraDefinitionBundle'=>SObjectType.AuraDefinitionBundle,
-            'LightningComponentBundle'=>SObjectType.LightningComponentBundle,
-            'LightningComponentResource'=>SObjectType.LightningComponentResource
-            };
-                private static Map<SObjectType,String> queryfieldsList=new Map<SObjectType,String>{
-                    SObjectType.ApexClass => 'Id,Name,LastModifiedDate,LastModifiedById,LastModifiedBy.Name,Body',
-                        SObjectType.ApexPage  =>'Id,Name,LastModifiedDate,LastModifiedById,LastModifiedBy.Name,Markup',
-                        SObjectType.AuraDefinitionBundle  =>'DeveloperName,MasterLabel,LastModifiedDate, LastModifiedById,LastModifiedBy.Name,Id',
-                        SObjectType.AuraDefinition  =>'Id,LastModifiedDate,LastModifiedById,LastModifiedBy.Name,AuraDefinitionBundleId,DefType,Format,Source',
-                        SObjectType.LightningComponentBundle  =>'description,masterLabel,LastModifiedDate,LastModifiedById,LastModifiedBy.Name,Id',
-                        SObjectType.LightningComponentResource  =>'Id,FilePath,LastModifiedDate,LastModifiedById,LastModifiedBy.Name,Format,LightningComponentBundleId,Source'
-                        };
+  
                             }
