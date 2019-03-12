@@ -3,14 +3,16 @@ public class ToolingAPIServiceTest {
     @isTest
     static void ToolingAPIServiceTest(){
         Test.setMock(HttpCalloutMock.class, new ToolingAPIServiceMock('[{}]'));
-         Test.startTest();
+ 	Test.startTest();
         ToolingAPIService service=new ToolingAPIService();
-        service.queryMetadata(ToolingAPIService.getENUMforString.get('ApexClass'));
-        service.queryMetadata(ToolingAPIService.getENUMforString.get('ApexPage'));
-        service.queryAuraBundle('queryAuraBundle');
-        service.queryWebBundle('queryWebBundle');
-        service.updateAuraDefinition('queryAuraBundle','id');
-        service.updateWebDefinition('queryWebBundle','id');
+        service.query('');
+	service.createApexClass('','');
+	service.createApexPage('','');
+	service.createLightingComponent('');
+	service.createLightingComponentFile('','','');
+	service.createLightingWEBComponent('');	        
+	service.createLightingWEBComponentFile('','','','','','');
+        
         
         Test.stopTest();
     }
