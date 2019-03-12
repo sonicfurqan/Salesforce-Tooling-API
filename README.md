@@ -3,9 +3,13 @@ Helper method to create apex,visualforce,lighting component,lighting web compone
 
 Tooling Api End Points 
 1.Querying files = /services/data/v43.0/tooling/query?q=
+
   a.Fetching apex select+id+from+apexclass
+  
   b.Fetching vf select+id+from+apexpage
+  
   c.Fetching lighting component select+id+from+AuraDefinition 
+  
   d.Fetching lighting web component select+id+from+LightningComponentResource
    
 1.Inserting Apex class =/services/data/v45.0/tooling/sobjects/ApexClass
